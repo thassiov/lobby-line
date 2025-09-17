@@ -1,0 +1,16 @@
+{
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "target": "es6",
+    "moduleResolution": "bundler",
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": ".",
+    "outDir": "./dist",
+    "resolveJsonModule": true
+  },
+  "exclude": [
+    "eslint.config.mjs",
+    "jest.config.mjs",
+    "coverage/"
+  ]
+}
