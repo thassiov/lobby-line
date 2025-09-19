@@ -1,8 +1,6 @@
-import { KafkaMessage } from 'kafkajs';
 import { BaseService } from '../../lib/base-classes';
 import { ValidationError } from '../../lib/errors';
 import { formatZodError } from '../../lib/utils/formatters';
-import { QueueEventChannel } from './queue.event-channel';
 import { QueueRepository } from './queue.repository';
 import {
   createQueueDtoSchema,
@@ -13,10 +11,7 @@ import {
 import { IQueue, queueSchema } from './types/queue.type';
 
 class QueueService extends BaseService {
-  constructor(
-    private readonly queueRepository: QueueRepository,
-    private readonly queueEventChannel: QueueEventChannel
-  ) {
+  constructor(private readonly queueRepository: QueueRepository) {
     super('queue-service');
   }
 
@@ -37,10 +32,6 @@ class QueueService extends BaseService {
     }
 
     const result = await this.queueRepository.create(createDto);
-
-    await this.queueEventChannel.sendMessageToTopic('create-queue', [
-      { key: result, value: createDto.queueProp },
-    ]);
 
     return result;
   }
@@ -118,18 +109,6 @@ class QueueService extends BaseService {
     }
 
     return this.queueRepository.deleteById(id);
-  }
-
-  async consumeMessagesFromTopic(topic: string): Promise<void> {
-    const handler = async function topicHandler({
-      message,
-    }: {
-      message: KafkaMessage;
-    }): Promise<void> {
-      await Promise.resolve(message);
-    };
-
-    await this.queueEventChannel.consumeFromTopic(topic, handler);
   }
 }
 
