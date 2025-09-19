@@ -1,17 +1,17 @@
 import z from 'zod';
-import { sampleSchema } from './sample.type';
+import { queueSchema } from './queue.type';
 
-const createSampleDtoSchema = z
-  .strictObject(sampleSchema.shape)
-  .pick({ sampleProp: true });
+const createQueueDtoSchema = z
+  .strictObject(queueSchema.shape)
+  .pick({ queueProp: true });
 
-type ICreateSampleDto = z.infer<typeof createSampleDtoSchema>;
+type ICreateQueueDto = z.infer<typeof createQueueDtoSchema>;
 
-const updateSampleDtoSchema = z
-  .strictObject(sampleSchema.shape)
-  .pick({ sampleProp: true });
+const updateQueueDtoSchema = z
+  .strictObject(queueSchema.shape)
+  .pick({ queueProp: true });
 
-type IUpdateSampleDto = z.infer<typeof updateSampleDtoSchema>;
+type IUpdateQueueDto = z.infer<typeof updateQueueDtoSchema>;
 
-export { createSampleDtoSchema, updateSampleDtoSchema };
-export type { ICreateSampleDto, IUpdateSampleDto };
+export { createQueueDtoSchema, updateQueueDtoSchema };
+export type { ICreateQueueDto, IUpdateQueueDto };

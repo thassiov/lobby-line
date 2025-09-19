@@ -1,13 +1,13 @@
 import z from 'zod';
 
-const sampleSchema = z.object({
+const queueSchema = z.object({
   id: z.uuidv4(),
-  sampleProp: z.string(),
+  queueProp: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
 
-type ISample = z.infer<typeof sampleSchema>;
+type IQueue = z.infer<typeof queueSchema>;
 
-export { sampleSchema };
-export type { ISample };
+export { queueSchema };
+export type { IQueue };

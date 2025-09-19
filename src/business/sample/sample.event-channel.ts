@@ -1,10 +1,10 @@
 import { Kafka } from 'kafkajs';
 import { BaseEventChannel } from '../../lib/base-classes';
 
-class SampleEventChannel extends BaseEventChannel {
+class QueueEventChannel extends BaseEventChannel {
   constructor(brokerClient: Kafka) {
-    super('sample-event-channel', brokerClient);
+    super('queue-event-channel', brokerClient);
   }
 }
 
-export { SampleEventChannel };
+export { QueueEventChannel };

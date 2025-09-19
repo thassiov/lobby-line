@@ -1,13 +1,13 @@
-import { makeServiceEndpoints } from './sample.endpoint';
-import { SampleEventChannel } from './sample.event-channel';
-import { SampleRepository } from './sample.repository';
-import { SampleService } from './sample.service';
+import { makeServiceEndpoints } from './queue.endpoint';
+import { QueueEventChannel } from './queue.event-channel';
+import { QueueRepository } from './queue.repository';
+import { QueueService } from './queue.service';
 
-const sample = {
-  service: SampleService,
-  repository: SampleRepository,
+const queue = {
+  service: QueueService,
+  repository: QueueRepository,
   endpoint: makeServiceEndpoints,
-  eventChannel: SampleEventChannel,
+  eventChannel: QueueEventChannel,
 };
 
-export { sample };
+export { queue };

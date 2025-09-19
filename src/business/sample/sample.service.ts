@@ -2,26 +2,26 @@ import { KafkaMessage } from 'kafkajs';
 import { BaseService } from '../../lib/base-classes';
 import { ValidationError } from '../../lib/errors';
 import { formatZodError } from '../../lib/utils/formatters';
-import { SampleEventChannel } from './sample.event-channel';
-import { SampleRepository } from './sample.repository';
+import { QueueEventChannel } from './queue.event-channel';
+import { QueueRepository } from './queue.repository';
 import {
-  createSampleDtoSchema,
-  ICreateSampleDto,
-  IUpdateSampleDto,
-  updateSampleDtoSchema,
+  createQueueDtoSchema,
+  ICreateQueueDto,
+  IUpdateQueueDto,
+  updateQueueDtoSchema,
 } from './types/dto.type';
-import { ISample, sampleSchema } from './types/sample.type';
+import { IQueue, queueSchema } from './types/queue.type';
 
-class SampleService extends BaseService {
+class QueueService extends BaseService {
   constructor(
-    private readonly sampleRepository: SampleRepository,
-    private readonly sampleEventChannel: SampleEventChannel
+    private readonly queueRepository: QueueRepository,
+    private readonly queueEventChannel: QueueEventChannel
   ) {
-    super('sample-service');
+    super('queue-service');
   }
 
-  async create(createDto: ICreateSampleDto): Promise<ISample['id']> {
-    const isValid = createSampleDtoSchema.safeParse(createDto);
+  async create(createDto: ICreateQueueDto): Promise<IQueue['id']> {
+    const isValid = createQueueDtoSchema.safeParse(createDto);
 
     if (!isValid.success) {
       const errorInstance = new ValidationError({
@@ -29,24 +29,24 @@ class SampleService extends BaseService {
           input: createDto,
           errors: formatZodError(isValid.error.issues),
         },
-        context: 'create sample',
+        context: 'create queue',
       });
 
       this.logger.error(errorInstance);
       throw errorInstance;
     }
 
-    const result = await this.sampleRepository.create(createDto);
+    const result = await this.queueRepository.create(createDto);
 
-    await this.sampleEventChannel.sendMessageToTopic('create-sample', [
-      { key: result, value: createDto.sampleProp },
+    await this.queueEventChannel.sendMessageToTopic('create-queue', [
+      { key: result, value: createDto.queueProp },
     ]);
 
     return result;
   }
 
-  async getById(id: ISample['id']): Promise<ISample | undefined> {
-    const isValid = sampleSchema.pick({ id: true }).safeParse({ id });
+  async getById(id: IQueue['id']): Promise<IQueue | undefined> {
+    const isValid = queueSchema.pick({ id: true }).safeParse({ id });
 
     if (!isValid.success) {
       const errorInstance = new ValidationError({
@@ -54,21 +54,21 @@ class SampleService extends BaseService {
           input: { id },
           errors: formatZodError(isValid.error.issues),
         },
-        context: 'get sample by id',
+        context: 'get queue by id',
       });
 
       this.logger.error(errorInstance);
       throw errorInstance;
     }
 
-    return this.sampleRepository.getById(id);
+    return this.queueRepository.getById(id);
   }
 
   async updateById(
-    id: ISample['id'],
-    updateSampleDto: IUpdateSampleDto
+    id: IQueue['id'],
+    updateQueueDto: IUpdateQueueDto
   ): Promise<boolean> {
-    const isIdValid = sampleSchema.pick({ id: true }).safeParse({ id });
+    const isIdValid = queueSchema.pick({ id: true }).safeParse({ id });
 
     if (!isIdValid.success) {
       const errorInstance = new ValidationError({
@@ -76,14 +76,14 @@ class SampleService extends BaseService {
           input: { id },
           errors: formatZodError(isIdValid.error.issues),
         },
-        context: 'update sample by id: id is invalid',
+        context: 'update queue by id: id is invalid',
       });
 
       this.logger.error(errorInstance);
       throw errorInstance;
     }
 
-    const isDtoValid = updateSampleDtoSchema.safeParse(updateSampleDto);
+    const isDtoValid = updateQueueDtoSchema.safeParse(updateQueueDto);
 
     if (!isDtoValid.success) {
       const errorInstance = new ValidationError({
@@ -91,18 +91,18 @@ class SampleService extends BaseService {
           input: { id },
           errors: formatZodError(isDtoValid.error.issues),
         },
-        context: 'update sample by id: dto is invalid',
+        context: 'update queue by id: dto is invalid',
       });
 
       this.logger.error(errorInstance);
       throw errorInstance;
     }
 
-    return this.sampleRepository.updateById(id, updateSampleDto);
+    return this.queueRepository.updateById(id, updateQueueDto);
   }
 
-  async deleteById(id: ISample['id']): Promise<boolean> {
-    const isValid = sampleSchema.pick({ id: true }).safeParse({ id });
+  async deleteById(id: IQueue['id']): Promise<boolean> {
+    const isValid = queueSchema.pick({ id: true }).safeParse({ id });
 
     if (!isValid.success) {
       const errorInstance = new ValidationError({
@@ -110,14 +110,14 @@ class SampleService extends BaseService {
           input: { id },
           errors: formatZodError(isValid.error.issues),
         },
-        context: 'delete sample by id',
+        context: 'delete queue by id',
       });
 
       this.logger.error(errorInstance);
       throw errorInstance;
     }
 
-    return this.sampleRepository.deleteById(id);
+    return this.queueRepository.deleteById(id);
   }
 
   async consumeMessagesFromTopic(topic: string): Promise<void> {
@@ -129,8 +129,8 @@ class SampleService extends BaseService {
       await Promise.resolve(message);
     };
 
-    await this.sampleEventChannel.consumeFromTopic(topic, handler);
+    await this.queueEventChannel.consumeFromTopic(topic, handler);
   }
 }
 
-export { SampleService };
+export { QueueService };

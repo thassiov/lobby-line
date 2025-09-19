@@ -1,13 +1,13 @@
 const database = {
   host: 'db',
   port: '5432',
-  user: 'sample',
-  database: 'sample',
-  password: 'sample',
+  user: 'queue',
+  database: 'queue',
+  password: 'queue',
 };
 
 const eventBroker = {
-  clientId: 'sample',
+  clientId: 'queue',
   brokers: ['broker:9092'],
 };
 
@@ -16,8 +16,8 @@ const restApi = {
 };
 
 const repository = {
-  sample: {
-    tableName: 'sample',
+  queue: {
+    tableName: 'queue',
   },
 };
 

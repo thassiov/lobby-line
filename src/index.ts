@@ -1,4 +1,4 @@
-import { sample } from './business';
+import { queue } from './business';
 import { getDatabaseClient } from './infra/database/postgres/lib/connection-client';
 import { getEventBrokerClient } from './infra/event-broker/kafka/lib/connection-client';
 import { setupExpressRestApi } from './infra/rest-api/express';
@@ -16,20 +16,20 @@ function bootstrap() {
   logger.info('Fetching eventBrokerClient');
   const eventBrokerClient = getEventBrokerClient(internalConfigs.eventBroker);
 
-  logger.info("Creating sample service's instance");
-  const sampleRepository = new sample.repository(databaseClient);
-  const sampleEventChannel = new sample.eventChannel(eventBrokerClient);
-  const sampleService = new sample.service(
-    sampleRepository,
-    sampleEventChannel
+  logger.info("Creating queue service's instance");
+  const queueRepository = new queue.repository(databaseClient);
+  const queueEventChannel = new queue.eventChannel(eventBrokerClient);
+  const queueService = new queue.service(
+    queueRepository,
+    queueEventChannel
   );
 
-  logger.info('Setting up sample service http endpoints');
-  const sampleEndpoints = sample.endpoint(sampleService);
+  logger.info('Setting up queue service http endpoints');
+  const queueEndpoints = queue.endpoint(queueService);
 
   logger.info('Starting http server');
   const startServer = setupExpressRestApi(
-    sampleEndpoints,
+    queueEndpoints,
     internalConfigs.restApi
   );
 

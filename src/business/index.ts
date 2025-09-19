@@ -1,3 +1,3 @@
-import { sample } from './sample';
+import { queue } from './queue';
 
-export { sample };
+export { queue };

@@ -4,23 +4,23 @@ import { BaseRepository } from '../../lib/base-classes';
 import { internalConfigs } from '../../lib/config';
 import { NotFoundError, UnexpectedError } from '../../lib/errors';
 import { BaseCustomError } from '../../lib/errors/base-custom-error.error';
-import { ICreateSampleDto, IUpdateSampleDto } from './types/dto.type';
-import { ISample } from './types/sample.type';
+import { ICreateQueueDto, IUpdateQueueDto } from './types/dto.type';
+import { IQueue } from './types/queue.type';
 
-class SampleRepository extends BaseRepository {
+class QueueRepository extends BaseRepository {
   private tableName: string;
   constructor(private readonly dbClient: Knex) {
     super('account-repository');
-    this.tableName = internalConfigs.repository.sample.tableName;
+    this.tableName = internalConfigs.repository.queue.tableName;
   }
 
-  async create(createDto: ICreateSampleDto): Promise<ISample['id']> {
+  async create(createDto: ICreateQueueDto): Promise<IQueue['id']> {
     try {
       const [result] = await this.sendInsertReturningIdQuery(createDto);
 
       if (!result) {
         const errorInstance = new UnexpectedError({
-          context: 'create sample',
+          context: 'create queue',
           details: {
             input: createDto,
             message: 'database insert operation did not return an id',
@@ -39,7 +39,7 @@ class SampleRepository extends BaseRepository {
 
       const errorInstance = new UnexpectedError({
         cause: error as Error,
-        context: 'create sample',
+        context: 'create queue',
         details: {
           input: createDto,
         },
@@ -50,13 +50,13 @@ class SampleRepository extends BaseRepository {
     }
   }
 
-  async getById(id: ISample['id']): Promise<ISample | undefined> {
+  async getById(id: IQueue['id']): Promise<IQueue | undefined> {
     try {
       return await this.sendFindByIdQuery(id);
     } catch (error) {
       const repositoryError = new UnexpectedError({
         cause: error as Error,
-        context: 'get sample by id',
+        context: 'get queue by id',
         details: {
           input: { id },
         },
@@ -67,17 +67,17 @@ class SampleRepository extends BaseRepository {
   }
 
   async updateById(
-    id: ISample['id'],
-    updateSampleDto: IUpdateSampleDto
+    id: IQueue['id'],
+    updateQueueDto: IUpdateQueueDto
   ): Promise<boolean> {
     try {
-      const result = await this.sendUpdateByIdQuery(id, updateSampleDto);
+      const result = await this.sendUpdateByIdQuery(id, updateQueueDto);
 
       if (result === 0) {
         const errorInstance = new NotFoundError({
-          context: 'update sample by id',
+          context: 'update queue by id',
           details: {
-            input: { id, ...updateSampleDto },
+            input: { id, ...updateQueueDto },
           },
         });
 
@@ -93,9 +93,9 @@ class SampleRepository extends BaseRepository {
 
       const errorInstance = new UnexpectedError({
         cause: error as Error,
-        context: 'update sample by id',
+        context: 'update queue by id',
         details: {
-          input: { id, ...updateSampleDto },
+          input: { id, ...updateQueueDto },
         },
       });
 
@@ -104,13 +104,13 @@ class SampleRepository extends BaseRepository {
     }
   }
 
-  async deleteById(id: ISample['id']): Promise<boolean> {
+  async deleteById(id: IQueue['id']): Promise<boolean> {
     try {
       const result = await this.sendDeleteByIdQuery(id);
 
       if (result === 0) {
         throw new NotFoundError({
-          context: 'delete sample by id',
+          context: 'delete queue by id',
           details: {
             input: { id },
           },
@@ -125,7 +125,7 @@ class SampleRepository extends BaseRepository {
 
       const repositoryError = new UnexpectedError({
         cause: error as Error,
-        context: 'delete sample by id',
+        context: 'delete queue by id',
         details: {
           input: { id },
         },
@@ -147,21 +147,21 @@ class SampleRepository extends BaseRepository {
   }
 
   private async sendFindByIdQuery(
-    id: ISample['id']
-  ): Promise<ISample | undefined> {
-    return this.dbClient<ISample>(this.tableName).where('id', id).first();
+    id: IQueue['id']
+  ): Promise<IQueue | undefined> {
+    return this.dbClient<IQueue>(this.tableName).where('id', id).first();
   }
 
   private async sendUpdateByIdQuery(
-    id: ISample['id'],
-    dto: IUpdateSampleDto
+    id: IQueue['id'],
+    dto: IUpdateQueueDto
   ): Promise<number> {
     return await this.dbClient(this.tableName).where('id', id).update(dto);
   }
 
-  private async sendDeleteByIdQuery(id: ISample['id']): Promise<number> {
+  private async sendDeleteByIdQuery(id: IQueue['id']): Promise<number> {
     return await this.dbClient(this.tableName).where('id', id).del();
   }
 }
 
-export { SampleRepository };
+export { QueueRepository };

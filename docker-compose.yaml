@@ -1,6 +1,6 @@
 services:
-  sample-image:
-    image: sample-image:latest
+  queue-image:
+    image: queue-image:latest
     pull_policy: never
     build:
       context: .
@@ -12,9 +12,9 @@ services:
     ports:
       - '5432:5432'
     environment:
-      - POSTGRES_USER=sample
-      - POSTGRES_PASSWORD=sample
-      - POSTGRES_DB=sample
+      - POSTGRES_USER=queue
+      - POSTGRES_PASSWORD=queue
+      - POSTGRES_DB=queue
 
   broker:
     image: 'bitnami/kafka:latest'
@@ -53,15 +53,15 @@ services:
         condition: service_healthy
 
   db-init:
-    image: sample-image:latest
+    image: queue-image:latest
     pull_policy: never
     command: ['npm', 'run', 'db:migration:up']
     restart: on-failure:5
     depends_on:
       - db
-      - sample-image
+      - queue-image
 
-  sample-service:
+  queue-service:
     build:
       context: .
       dockerfile: Dockerfile

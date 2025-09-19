@@ -1,7 +1,7 @@
 {
-  "name": "sample-project",
+  "name": "queue-project",
   "version": "0.1.0",
-  "description": "sample project",
+  "description": "queue project",
   "main": "./dist/index.js",
   "scripts": {
     "dev:start": "ts-node ./src/index.ts",

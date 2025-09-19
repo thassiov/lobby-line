@@ -29,24 +29,24 @@ async function up(knex: Knex) {
   await knex.raw(ON_UPDATE_TIMESTAMP_FUNCTION);
 
   await knex.schema.createTable(
-    internalConfigs.repository.sample.tableName,
+    internalConfigs.repository.queue.tableName,
     function (table) {
       table
         .uuid('id')
         .defaultTo(knex.fn.uuid())
         .primary()
         .unique()
-        .index('sampleIdx');
-      table.text('sampleProp').notNullable();
+        .index('queueIdx');
+      table.text('queueProp').notNullable();
       table.timestamps(true, true);
     }
   );
-  await knex.raw(onUpdateTrigger(internalConfigs.repository.sample.tableName));
+  await knex.raw(onUpdateTrigger(internalConfigs.repository.queue.tableName));
 }
 
 async function down(knex: Knex) {
   await knex.raw(DROP_ON_UPDATE_TIMESTAMP_FUNCTION);
-  await knex.schema.dropTable(internalConfigs.repository.sample.tableName);
+  await knex.schema.dropTable(internalConfigs.repository.queue.tableName);
 }
 
 const config = { transaction: false };

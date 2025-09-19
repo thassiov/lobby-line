@@ -1,90 +1,90 @@
 import express, { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { EndpointHandler } from '../../lib/types';
-import { SampleService } from './sample.service';
-import { ICreateSampleDto, IUpdateSampleDto } from './types/dto.type';
+import { QueueService } from './queue.service';
+import { ICreateQueueDto, IUpdateQueueDto } from './types/dto.type';
 
 const router = express.Router();
 
-function makeServiceEndpoints(sampleService: SampleService): express.Router {
-  router.post('/v1/samples/', createSampleEndpointFactory(sampleService));
+function makeServiceEndpoints(queueService: QueueService): express.Router {
+  router.post('/v1/queues/', createQueueEndpointFactory(queueService));
 
-  router.get('/v1/samples/', listenToSampleTopicEndpointFactory(sampleService));
+  router.get('/v1/queues/', listenToQueueTopicEndpointFactory(queueService));
 
-  router.get('/v1/samples/:id', getSampleByIdEndpointFactory(sampleService));
+  router.get('/v1/queues/:id', getQueueByIdEndpointFactory(queueService));
 
   router.patch(
-    '/v1/samples/:id',
-    updateSampleByIdEndpointFactory(sampleService)
+    '/v1/queues/:id',
+    updateQueueByIdEndpointFactory(queueService)
   );
 
   router.delete(
-    '/v1/samples/:id',
-    deleteSampleByIdEndpointFactory(sampleService)
+    '/v1/queues/:id',
+    deleteQueueByIdEndpointFactory(queueService)
   );
 
   return router;
 }
 
-function createSampleEndpointFactory(
-  sampleService: SampleService
+function createQueueEndpointFactory(
+  queueService: QueueService
 ): EndpointHandler {
-  return async function createSampleEndpoint(
+  return async function createQueueEndpoint(
     req: Request,
     res: Response
   ): Promise<void> {
-    const id = await sampleService.create(req.body as ICreateSampleDto);
+    const id = await queueService.create(req.body as ICreateQueueDto);
 
     res.status(StatusCodes.CREATED).json({ id });
     return;
   };
 }
 
-function listenToSampleTopicEndpointFactory(
-  sampleService: SampleService
+function listenToQueueTopicEndpointFactory(
+  queueService: QueueService
 ): EndpointHandler {
-  return async function listenToSampleTopicEndpoint(
+  return async function listenToQueueTopicEndpoint(
     req: Request,
     res: Response
   ): Promise<void> {
     const topic = req.query['topic'] as string;
-    await sampleService.consumeMessagesFromTopic(topic);
+    await queueService.consumeMessagesFromTopic(topic);
 
     res.status(StatusCodes.OK).send();
     return;
   };
 }
 
-function getSampleByIdEndpointFactory(
-  sampleService: SampleService
+function getQueueByIdEndpointFactory(
+  queueService: QueueService
 ): EndpointHandler {
-  return async function getSampleByIdEndpoint(
+  return async function getQueueByIdEndpoint(
     req: Request,
     res: Response
   ): Promise<void> {
     const id = req.params['id']!;
-    const sample = await sampleService.getById(id);
+    const queue = await queueService.getById(id);
 
-    if (!sample) {
+    if (!queue) {
       res.status(StatusCodes.NOT_FOUND).send();
       return;
     }
 
-    res.status(StatusCodes.OK).json({ sample });
+    res.status(StatusCodes.OK).json({ queue });
     return;
   };
 }
 
-function updateSampleByIdEndpointFactory(
-  sampleService: SampleService
+function updateQueueByIdEndpointFactory(
+  queueService: QueueService
 ): EndpointHandler {
-  return async function updateSampleByIdEndpoint(
+  return async function updateQueueByIdEndpoint(
     req: Request,
     res: Response
   ): Promise<void> {
     const id = req.params['id']!;
-    const dto = req.body as IUpdateSampleDto;
-    const result = await sampleService.updateById(id, dto);
+    const dto = req.body as IUpdateQueueDto;
+    const result = await queueService.updateById(id, dto);
 
     if (!result) {
       res.status(StatusCodes.NOT_FOUND).send();
@@ -96,16 +96,16 @@ function updateSampleByIdEndpointFactory(
   };
 }
 
-function deleteSampleByIdEndpointFactory(
-  sampleService: SampleService
+function deleteQueueByIdEndpointFactory(
+  queueService: QueueService
 ): EndpointHandler {
-  return async function deleteSampleByIdEndpoint(
+  return async function deleteQueueByIdEndpoint(
     req: Request,
     res: Response
   ): Promise<void> {
     const id = req.params['id']!;
 
-    await sampleService.deleteById(id);
+    await queueService.deleteById(id);
 
     res.status(StatusCodes.NO_CONTENT).send();
     return;
