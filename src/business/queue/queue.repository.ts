@@ -66,6 +66,34 @@ class QueueRepository extends BaseRepository {
     }
   }
 
+  async listAll(): Promise<IQueue[] | undefined> {
+    try {
+      return await this.sendGetAllQuery();
+    } catch (error) {
+      const repositoryError = new UnexpectedError({
+        cause: error as Error,
+        context: 'list queues',
+        details: {},
+      });
+
+      throw repositoryError;
+    }
+  }
+
+  async countAll(): Promise<number> {
+    try {
+      return await this.sendCountAllQuery();
+    } catch (error) {
+      const repositoryError = new UnexpectedError({
+        cause: error as Error,
+        context: 'counting queues',
+        details: {},
+      });
+
+      throw repositoryError;
+    }
+  }
+
   async updateById(
     id: IQueue['id'],
     updateQueueDto: IUpdateQueueDto
@@ -150,6 +178,14 @@ class QueueRepository extends BaseRepository {
     id: IQueue['id']
   ): Promise<IQueue | undefined> {
     return this.dbClient<IQueue>(this.tableName).where('id', id).first();
+  }
+
+  private async sendGetAllQuery(): Promise<IQueue[] | undefined> {
+    return this.dbClient<IQueue>(this.tableName).select('*');
+  }
+
+  private async sendCountAllQuery(): Promise<number> {
+    return this.dbClient<IQueue>(this.tableName).count('*');
   }
 
   private async sendUpdateByIdQuery(

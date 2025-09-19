@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { ValidationError } from '../../lib/errors';
 import { EndpointHandler } from '../../lib/types';
 import { QueueService } from './queue.service';
 import { ICreateQueueDto, IUpdateQueueDto } from './types/dto.type';
@@ -9,19 +10,13 @@ const router = express.Router();
 function makeServiceEndpoints(queueService: QueueService): express.Router {
   router.post('/v1/queues/', createQueueEndpointFactory(queueService));
 
-  router.get('/v1/queues/', listenToQueueTopicEndpointFactory(queueService));
+  router.get('/v1/queues/', listOrCountQueuesEndpointFactory(queueService));
 
   router.get('/v1/queues/:id', getQueueByIdEndpointFactory(queueService));
 
-  router.patch(
-    '/v1/queues/:id',
-    updateQueueByIdEndpointFactory(queueService)
-  );
+  router.patch('/v1/queues/:id', updateQueueByIdEndpointFactory(queueService));
 
-  router.delete(
-    '/v1/queues/:id',
-    deleteQueueByIdEndpointFactory(queueService)
-  );
+  router.delete('/v1/queues/:id', deleteQueueByIdEndpointFactory(queueService));
 
   return router;
 }
@@ -40,17 +35,33 @@ function createQueueEndpointFactory(
   };
 }
 
-function listenToQueueTopicEndpointFactory(
+function listOrCountQueuesEndpointFactory(
   queueService: QueueService
 ): EndpointHandler {
-  return async function listenToQueueTopicEndpoint(
+  return async function listOrCountQueuesEndpoint(
     req: Request,
     res: Response
   ): Promise<void> {
-    const topic = req.query['topic'] as string;
-    await queueService.consumeMessagesFromTopic(topic);
+    const operation = req.query['q'] as string;
 
-    res.status(StatusCodes.OK).send();
+    let result;
+
+    if (operation === 'list') {
+      result = await queueService.listAll();
+    } else if (operation === 'count') {
+      const count = await queueService.countAll();
+      result = { count };
+    } else {
+      throw new ValidationError({
+        details: {
+          input: { operation },
+          errors: 'argument is not valid',
+        },
+        context: 'list or count queues',
+      });
+    }
+
+    res.status(StatusCodes.OK).json(result);
     return;
   };
 }

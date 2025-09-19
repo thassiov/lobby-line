@@ -55,6 +55,14 @@ class QueueService extends BaseService {
     return this.queueRepository.getById(id);
   }
 
+  async listAll(): Promise<IQueue[] | undefined> {
+    return this.queueRepository.listAll();
+  }
+
+  async countAll(): Promise<number> {
+    return this.queueRepository.countAll();
+  }
+
   async updateById(
     id: IQueue['id'],
     updateQueueDto: IUpdateQueueDto
