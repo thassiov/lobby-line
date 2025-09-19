@@ -16,42 +16,6 @@ services:
       - POSTGRES_PASSWORD=queue
       - POSTGRES_DB=queue
 
-  broker:
-    image: 'bitnami/kafka:latest'
-    container_name: broker
-    environment:
-      KAFKA_CFG_NODE_ID: 0
-      KAFKA_CFG_PROCESS_ROLES: 'broker, controller'
-      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: '0@broker:9093'
-      KAFKA_CFG_LISTENERS: 'BROKER://:9092,CONTROLLER://:9093,INTERNAL://:9094,EXTERNAL://:9095'
-      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: 'BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT'
-      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: 'BROKER'
-      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
-      KAFKA_CFG_ADVERTISED_LISTENERS: 'BROKER://broker:9092,INTERNAL://broker:9094,EXTERNAL://localhost:9095'
-      KAFKA_CLIENT_LISTENER_NAME: 'INTERNAL'
-    healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'kafka-broker-api-versions.sh --bootstrap-server broker:9092 || exit 1',
-        ]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 10s
-
-  kafka-ui:
-    image: 'kafbat/kafka-ui:latest'
-    ports:
-      - '8081:8080'
-    environment:
-      DYNAMIC_CONFIG_ENABLED: 'true'
-      KAFKA_CLUSTERS_0_NAME: 'local'
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'broker:9094'
-    depends_on:
-      broker:
-        condition: service_healthy
-
   db-init:
     image: queue-image:latest
     pull_policy: never
@@ -80,7 +44,5 @@ services:
       - '8080:8080'
     command: ['npm', 'run', 'dev:start']
     depends_on:
-      broker:
-        condition: service_healthy
       db-init:
         condition: service_completed_successfully

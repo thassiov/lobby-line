@@ -37,7 +37,7 @@ async function up(knex: Knex) {
         .primary()
         .unique()
         .index('queueIdx');
-      table.text('queueProp').notNullable();
+      table.string('name').notNullable();
       table.timestamps(true, true);
     }
   );
