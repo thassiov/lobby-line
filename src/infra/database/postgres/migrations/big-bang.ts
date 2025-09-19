@@ -42,11 +42,41 @@ async function up(knex: Knex) {
     }
   );
   await knex.raw(onUpdateTrigger(internalConfigs.repository.queue.tableName));
+
+  await knex.schema.createTable(
+    internalConfigs.repository.queueItem.tableName,
+    function (table) {
+      table
+        .uuid('id')
+        .defaultTo(knex.fn.uuid())
+        .primary()
+        .unique()
+        .index('queueItemIdx');
+      table.uuid('queueId');
+      table.enum('status', ['open', 'closed']).notNullable().defaultTo('open');
+      table
+        .integer('priority')
+        // .checkBetween([1, 10])
+        .notNullable()
+        .defaultTo(5);
+      table.jsonb('meta');
+      table.timestamps(true, true);
+      table
+        .foreign('queueId')
+        .references('id')
+        .inTable(internalConfigs.repository.queue.tableName)
+        .onDelete('CASCADE');
+    }
+  );
+  // @NOTE: the argument for onUpdateTrigger is a string because it has to be snake cased. I'll fix this later
+  //  so we can set it directly as the value from the `internalConfigs` record (which is camel cased).
+  await knex.raw(onUpdateTrigger('queue_item'));
 }
 
 async function down(knex: Knex) {
   await knex.raw(DROP_ON_UPDATE_TIMESTAMP_FUNCTION);
   await knex.schema.dropTable(internalConfigs.repository.queue.tableName);
+  await knex.schema.dropTable(internalConfigs.repository.queueItem.tableName);
 }
 
 const config = { transaction: false };

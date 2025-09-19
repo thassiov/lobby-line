@@ -19,6 +19,9 @@ const repository = {
   queue: {
     tableName: 'queue',
   },
+  queueItem: {
+    tableName: 'queueItem',
+  },
 };
 
 const internalConfigs = {
