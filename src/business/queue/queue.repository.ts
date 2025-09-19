@@ -185,7 +185,10 @@ class QueueRepository extends BaseRepository {
   }
 
   private async sendCountAllQuery(): Promise<number> {
-    return this.dbClient<IQueue>(this.tableName).count('*');
+    const [result] = (await this.dbClient<IQueue>(this.tableName).count(
+      '*'
+    )) as { count: number }[];
+    return result!.count;
   }
 
   private async sendUpdateByIdQuery(

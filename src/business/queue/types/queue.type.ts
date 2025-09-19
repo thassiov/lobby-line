@@ -2,7 +2,7 @@ import z from 'zod';
 
 const queueSchema = z.object({
   id: z.uuidv4(),
-  queueProp: z.string(),
+  name: z.string().min(3).max(50),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
