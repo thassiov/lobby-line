@@ -10,7 +10,7 @@ import { IQueue } from './types/queue.type';
 class QueueRepository extends BaseRepository {
   private tableName: string;
   constructor(private readonly dbClient: Knex) {
-    super('account-repository');
+    super('queue-repository');
     this.tableName = internalConfigs.repository.queue.tableName;
   }
 
