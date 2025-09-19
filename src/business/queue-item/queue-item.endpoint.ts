@@ -30,6 +30,11 @@ function makeServiceEndpoints(
     setQueueItemStatusAsClosedByIdEndpointFactory(queueItemService)
   );
 
+  router.patch(
+    '/v1/queues/:queueId/queueItems/',
+    setOldestQueueItemStatusAsClosedByQueueIdEndpointFactory(queueItemService)
+  );
+
   router.delete(
     '/v1/queues/:queueId/queueItems/:id',
     deleteQueueItemByIdEndpointFactory(queueItemService)
@@ -70,6 +75,7 @@ function listOrCountOpenQueueItemsEndpointFactory(
     let result;
 
     if (operation === 'list') {
+      // @NOTE: this has no pagination atm
       result = await queueItemService.listAllByQueueId(queueId, 'open');
     } else if (operation === 'count') {
       const count = await queueItemService.countAllByQueueId(queueId, 'open');
@@ -122,6 +128,31 @@ function setQueueItemStatusAsClosedByIdEndpointFactory(
     const queueId = req.params['queueId']!;
     const result = await queueItemService.updateItemStatusById(
       queueItemId,
+      queueId,
+      {
+        status: 'closed',
+      }
+    );
+
+    if (!result) {
+      res.status(StatusCodes.NOT_FOUND).send();
+      return;
+    }
+
+    res.status(StatusCodes.OK).send();
+    return;
+  };
+}
+
+function setOldestQueueItemStatusAsClosedByQueueIdEndpointFactory(
+  queueItemService: QueueItemService
+): EndpointHandler {
+  return async function setOldestQueueItemStatusAsClosedByQueueIdEndpoint(
+    req: Request,
+    res: Response
+  ): Promise<void> {
+    const queueId = req.params['queueId']!;
+    const result = await queueItemService.updateOldestQueueItemStatusByQueueId(
       queueId,
       {
         status: 'closed',

@@ -77,7 +77,7 @@ class QueueItemService extends BaseService {
     if (!isDtoValid.success) {
       const errorInstance = new ValidationError({
         details: {
-          input: { id },
+          input: { id, queueId, ...updateQueueItemStatus },
           errors: formatZodError(isDtoValid.error.issues),
         },
         context: 'update queue item status by id',
@@ -91,6 +91,35 @@ class QueueItemService extends BaseService {
       id,
       queueId,
       updateQueueItemStatus
+    );
+  }
+
+  async updateOldestQueueItemStatusByQueueId(
+    queueId: IQueueItem['queueId'],
+    updateLatestQueueItemStatus: IUpdateQueueItemStatusDto
+  ): Promise<boolean> {
+    this.validateQueryId(queueId, 'update queue item status by id');
+
+    const isDtoValid = updateQueueItemStatusDtoSchema.safeParse(
+      updateLatestQueueItemStatus
+    );
+
+    if (!isDtoValid.success) {
+      const errorInstance = new ValidationError({
+        details: {
+          input: { queueId, ...updateLatestQueueItemStatus },
+          errors: formatZodError(isDtoValid.error.issues),
+        },
+        context: 'update queue item status by id',
+      });
+
+      this.logger.error(errorInstance);
+      throw errorInstance;
+    }
+
+    return this.queueItemRepository.updateOldestQueueItemStatusByQueueId(
+      queueId,
+      updateLatestQueueItemStatus
     );
   }
 

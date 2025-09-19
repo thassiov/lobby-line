@@ -155,6 +155,47 @@ class QueueItemRepository extends BaseRepository {
     }
   }
 
+  async updateOldestQueueItemStatusByQueueId(
+    queueId: IQueueItem['queueId'],
+    updateQueueItemStatus: IUpdateQueueItemStatusDto
+  ): Promise<boolean> {
+    try {
+      const result = await this.sendUpdateOldestQueueItemStatusByQueueIdQuery(
+        queueId,
+        updateQueueItemStatus
+      );
+
+      if (result === 0) {
+        const errorInstance = new NotFoundError({
+          context: 'update latest queue item status by id',
+          details: {
+            input: { queueId, ...updateQueueItemStatus },
+          },
+        });
+
+        this.logger.error(errorInstance);
+        throw errorInstance;
+      }
+
+      return true;
+    } catch (error) {
+      if (error instanceof BaseCustomError) {
+        throw error;
+      }
+
+      const errorInstance = new UnexpectedError({
+        cause: error as Error,
+        context: 'update latest queue item status by id',
+        details: {
+          input: { queueId, ...updateQueueItemStatus },
+        },
+      });
+
+      this.logger.error(errorInstance);
+      throw errorInstance;
+    }
+  }
+
   async deleteById(
     id: IQueueItem['id'],
     queueId: IQueueItem['queueId']
@@ -234,8 +275,31 @@ class QueueItemRepository extends BaseRepository {
     updateQueueItemStatus: IUpdateQueueItemStatusDto
   ): Promise<number> {
     return await this.dbClient(this.tableName)
-      .where({ id, queueId })
+      .where({ id, queueId, status: 'open' })
       .update(updateQueueItemStatus);
+  }
+
+  private async sendUpdateOldestQueueItemStatusByQueueIdQuery(
+    queueId: IQueueItem['queueId'],
+    updateQueueItemStatus: IUpdateQueueItemStatusDto
+  ): Promise<number> {
+    return this.dbClient.transaction(async (trx) => {
+      return trx(this.tableName)
+        .update(updateQueueItemStatus)
+        .where(
+          'id',
+          trx(this.tableName)
+            .select('id')
+            .where({ queueId, status: 'open' })
+            .orderBy([
+              { column: 'createdAt', order: 'asc' },
+              { column: 'id', order: 'asc' },
+            ])
+            .limit(1)
+            .forUpdate()
+            .skipLocked()
+        );
+    });
   }
 
   private async sendDeleteByIdQuery(

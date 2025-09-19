@@ -54,13 +54,10 @@ async function up(knex: Knex) {
         .index('queueItemIdx');
       table.uuid('queueId');
       table.enum('status', ['open', 'closed']).notNullable().defaultTo('open');
-      table
-        .integer('priority')
-        // .checkBetween([1, 10])
-        .notNullable()
-        .defaultTo(5);
+      table.integer('priority').notNullable().defaultTo(5);
       table.jsonb('meta');
       table.timestamps(true, true);
+      table.index(['queueId', 'status'], 'statusInQueueIdx');
       table
         .foreign('queueId')
         .references('id')
